@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Curiosity Compass — From Curiosity to Clarity</title>
+        <style>
+            :root {
+                --bg: #0b0c10;
+                --panel: #12141a;
+                --muted: #9aa3b2;
+                --text: #e6e9ef;
+                --accent: #60a5fa;
+                --ok: #34d399;
+                --danger: #f87171;
+                --radius: 16px;
+                --shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter,
+                    Arial;
+                background: linear-gradient(180deg, #0b0c10 0%, #0f1220 100%);
+                color: var(--text);
+                line-height: 1.6;
+                display: flex;
+                min-height: 100vh;
+            }
+            main {
+                flex: 1;
+            }
+            .section {
+                padding: 56px 20px;
+                max-width: 920px;
+                margin: auto;
+                position: relative;
+            }
+            .card {
+                background: linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.03),
+                    rgba(255, 255, 255, 0.01)
+                );
+                border-radius: var(--radius);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: var(--shadow);
+            }
+            h1,
+            h2,
+            h3 {
+                margin-bottom: 12px;
+            }
+            p:not(:last-child) {
+                margin-bottom: 8px;
+            }
+            .muted {
+                color: var(--muted);
+            }
+            .insight {
+                border-left: 4px solid var(--accent);
+                background: rgba(255, 255, 255, 0.03);
+                padding: 12px;
+                margin-top: 14px;
+                border-radius: 8px;
+            }
+            .summary-box {
+                margin-top: 16px;
+                padding: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.02);
+            }
+            .summary-box strong {
+                color: var(--accent);
+            }
+            .layer-card {
+                padding: 14px;
+                margin-bottom: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 12px;
+                cursor: pointer;
+                transition: background 0.18s;
+            }
+            .layer-card:hover {
+                background: rgba(255, 255, 255, 0.03);
+            }
+            .layer-card.active {
+                background: rgba(96, 165, 250, 0.12);
+                border-color: var(--accent);
+            }
+            .layer-details {
+                max-height: 0;
+                overflow: hidden;
+                opacity: 0;
+                transition: max-height 0.45s ease, opacity 0.3s ease;
+                margin-top: 0;
+            }
+            .layer-card.active .layer-details {
+                max-height: 1000px;
+                opacity: 1;
+                margin-top: 8px;
+                padding: 12px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+            }
+
+            /* Timeline navigation */
+            .timeline-nav {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                width: 220px;
+                background: rgba(255, 255, 255, 0.02);
+                border-right: 1px solid rgba(255, 255, 255, 0.06);
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: space-evenly;
+                padding: 22px 12px;
+                gap: 18px;
+                z-index: 220;
+            }
+            .timeline-track {
+                position: absolute;
+                top: 55px;
+                bottom: 20px;
+                left: 46.5px;
+                width: 2px;
+                background: rgba(255, 255, 255, 0.06);
+                height: 85%;
+            }
+            .timeline-progress {
+                position: absolute;
+                top: 55px;
+                left: 46.5px;
+                width: 2px;
+                background: var(--accent);
+                height: 0;
+                max-height: 85%;
+                transition: height 0.12s linear;
+            }
+            .timeline-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                cursor: pointer;
+                color: var(--muted);
+                font-size: 0.95em;
+                position: relative;
+                z-index: 10;
+                margin-left: 30px;
+            }
+            .timeline-dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                border: 2px solid var(--muted);
+                background: var(--bg);
+                flex-shrink: 0;
+                transition: all 0.18s;
+            }
+            .timeline-item.active {
+                color: var(--text);
+                font-weight: 600;
+            }
+            .timeline-item.active .timeline-dot {
+                border-color: var(--accent);
+                background: var(--accent);
+                box-shadow: 0 0 10px rgba(96, 165, 250, 0.25);
+            }
+            .timeline-label {
+                max-width: 120px;
+            }
+            @media (max-width: 840px) {
+                .timeline-nav {
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    top: auto;
+                    height: auto;
+                    width: 100%;
+                    flex-direction: row;
+                    justify-content: space-around;
+                    flex-wrap: wrap;
+                    padding: 8px;
+                    background: rgba(12, 14, 20, 0.94);
+                    border-top: 1px solid rgba(255, 255, 255, 0.06);
+                }
+                .timeline-track,
+                .timeline-progress {
+                    display: none;
+                }
+                .timeline-item {
+                    flex-direction: column;
+                    font-size: 0.75em;
+                }
+                .timeline-label {
+                    max-width: 80px;
+                }
+            }
+            /* small readable lists */
+            ul,
+            ol {
+                margin-left: 18px;
+                margin-bottom: 8px;
+            }
+            a {
+                color: var(--accent);
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="timeline-nav" aria-label="Site timeline">
+            <div class="timeline-track" aria-hidden="true"></div>
+            <div class="timeline-progress" id="timeline-progress"></div>
+            <div class="timeline-item" data-target="intro">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Intro</div>
+            </div>
+            <div class="timeline-item" data-target="natural">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Curiosity</div>
+            </div>
+            <div class="timeline-item" data-target="memory">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Memory</div>
+            </div>
+            <div class="timeline-item" data-target="projections">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Projections</div>
+            </div>
+            <div class="timeline-item" data-target="cycle">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Cycle</div>
+            </div>
+            <div class="timeline-item" data-target="inquiry">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Inquiry</div>
+            </div>
+            <div class="timeline-item" data-target="synthesis">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Synthesis</div>
+            </div>
+            <div class="timeline-item" data-target="now">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">The Now</div>
+            </div>
+            <div class="timeline-item" data-target="core-statement">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Statement</div>
+            </div>
+            <div class="timeline-item" data-target="conclusion">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-label">Conclusion</div>
+            </div>
+        </nav>
+
+        <main>
+            <!-- INTRO -->
+            <section id="intro" class="section">
+                <div class="card">
+                    <h1>Curiosity Compass</h1>
+                    <p class="muted">
+                        A practical and conceptual map for understanding how
+                        curiosity interacts with memory, projection, habitual
+                        loops, and presence. This resource explains mechanisms,
+                        offers concrete observations, and suggests practices for
+                        returning curiosity to its natural, integrative form.
+                    </p>
+                    <p>
+                        We follow a <strong>time arrow</strong>: the seed of
+                        curiosity → how experiences get stored as memory → how
+                        memories shape perception (projections) → how patterns
+                        repeat (addiction cycle) → how to pause and inquire →
+                        how to synthesize across layers → and finally how
+                        presence in the Now enables choice.
+                    </p>
+                    <p class="muted">
+                        Audience: higher-educated readers (non-specialists).
+                        Neuroscience terms are explained in accessible language;
+                        the emphasis is on structure and observable patterns.
+                    </p>
+                    <svg
+                        width="100%"
+                        height="120"
+                        viewBox="0 0 900 120"
+                        xmlns="http://www.w3.org/2000/svg"
+                        role="img"
+                        aria-label="timeline diagram"
+                    >
+                        <line
+                            x1="50"
+                            y1="60"
+                            x2="850"
+                            y2="60"
+                            stroke="#60a5fa"
+                            stroke-width="4"
+                            opacity="0.9"
+                        />
+                        <polygon points="850,60 830,50 830,70" fill="#60a5fa" />
+                        <text x="62" y="40" fill="#e6e9ef" font-size="13">
+                            Curiosity
+                        </text>
+                        <text x="190" y="40" fill="#e6e9ef" font-size="13">
+                            Memory
+                        </text>
+                        <text x="320" y="40" fill="#e6e9ef" font-size="13">
+                            Projections
+                        </text>
+                        <text x="440" y="40" fill="#e6e9ef" font-size="13">
+                            Cycle
+                        </text>
+                        <text x="560" y="40" fill="#e6e9ef" font-size="13">
+                            Inquiry
+                        </text>
+                        <text x="670" y="40" fill="#e6e9ef" font-size="13">
+                            Synthesis
+                        </text>
+                        <text x="760" y="40" fill="#e6e9ef" font-size="13">
+                            Now
+                        </text>
+                    </svg>
+                    <div class="summary-box">
+                        <strong>Key takeaway:</strong> Curiosity is a powerful
+                        orientation that can either open the world or become an
+                        instrument of avoidance. <br /><strong
+                            >Where to observe:</strong
+                        >
+                        in classrooms, meetings, feeds, conversations, and
+                        moments of personal difficulty.
+                    </div>
+                </div>
+            </section>
+
+            <!-- CURIOSITY -->
+            <section id="natural" class="section">
+                <div class="card">
+                    <h2>1 — Natural vs Hijacked Curiosity</h2>
+                    <p>
+                        <strong>Natural curiosity</strong> manifests as an
+                        interest-led exploration. It tolerates uncertainty,
+                        values learning, and often produces creativity and
+                        durable knowledge. Characteristically, it is accompanied
+                        by openness in posture, a calmer breath, and willingness
+                        to be corrected.
+                    </p>
+                    <p>
+                        <strong>Hijacked curiosity</strong> uses the same
+                        attentional machinery but repurposes it for quick
+                        relief, certainty, or identity protection. Surface
+                        behavior appears similar — searching, questioning — but
+                        the motive and outcome differ: speed, narrowing, and
+                        repeated short-term relief instead of integration.
+                    </p>
+                    <h3>Structure / Mechanism</h3>
+                    <p>
+                        Natural curiosity: novelty → orienting response →
+                        exploratory behavior → feedback → integration (mental
+                        model updated).<br />Hijacked curiosity: perceived
+                        threat/discomfort → urgency to reduce uncertainty →
+                        focused search or loop (often digital) → transient
+                        relief → avoidance of feeling → reinforcement of the
+                        loop.
+                    </p>
+                    <h3>Examples to observe</h3>
+                    <ul>
+                        <li>
+                            <strong>Science lab:</strong> a researcher forms a
+                            hypothesis and runs controlled tests (natural).
+                        </li>
+                        <li>
+                            <strong>Late-night web searches:</strong> repeatedly
+                            checking symptoms or news until anxiety spikes
+                            (hijacked).
+                        </li>
+                        <li>
+                            <strong>Conversation:</strong> genuinely asking a
+                            question vs. fishing for confirmation of an existing
+                            belief.
+                        </li>
+                    </ul>
+                    <div class="insight">
+                        <strong>Observation entry:</strong> note bodily signals
+                        — expansion vs. tightness; also ask, "Am I trying to
+                        know, or trying to stop feeling?"
+                    </div>
+                    <div class="summary-box">
+                        <strong>Key takeaway:</strong> Motive matters —
+                        curiosity for learning opens; curiosity for relief
+                        narrows. <br /><strong>Where to observe:</strong> study
+                        habits, online behavior, arguments, creative practice.
+                    </div>
+                </div>
+            </section>
+
+            <!-- MEMORY -->
+            <section id="memory" class="section">
+                <div class="card">
+                    <h2>2 — Memory: Snapshots & Goal‑Vectors</h2>
+                    <p>
+                        Memory in this model is best thought of as a collection
+                        of <strong>snapshots</strong> — compressed records
+                        formed when experience could not be fully integrated.
+                        Each snapshot typically includes sensory cues (what was
+                        seen/heard), an affective charge (how it felt in the
+                        body), a meaning or appraisal, and an implicit
+                        <strong>goal‑vector</strong>: the felt direction the
+                        system wanted to move toward (safety, approval, relief).
+                    </p>
+                    <h3>Why snapshots matter</h3>
+                    <p>
+                        Because they are compressed and indexed by pattern,
+                        snapshots can be reactivated by partial matches. A minor
+                        present cue may resemble the structure of a past
+                        snapshot and trigger the full pattern — including the
+                        goal-vector — often faster than conscious thought can
+                        intervene.
+                    </p>
+                    <h3>Examples to observe</h3>
+                    <ul>
+                        <li>
+                            Aline froze in a classroom presentation years ago;
+                            now she feels faint anxiety when asked to speak,
+                            even in safe settings.
+                        </li>
+                        <li>
+                            When a partner cancels a date, a person with past
+                            abandonment feels a flood of despair — the present
+                            mismatch is overlooked because the snapshot’s
+                            goal-vector (seek belonging) is strongly activated.
+                        </li>
+                    </ul>
+                    <h3>Reconsolidation — practical steps</h3>
+                    <ol>
+                        <li>
+                            <strong>Notice</strong> the trigger and the felt
+                            reaction.
+                        </li>
+                        <li>
+                            <strong>Name</strong> the old goal (e.g., "seeking
+                            safety").
+                        </li>
+                        <li>
+                            <strong>Allow</strong> the feeling in the body
+                            without immediate action.
+                        </li>
+                        <li>
+                            <strong>Find mismatch</strong> — what’s different
+                            now vs then (time, people, context, resources).
+                        </li>
+                        <li>
+                            <strong>Update</strong> the narrative: state an
+                            accurate appraisal aloud or in writing.
+                        </li>
+                        <li>
+                            <strong>Rehearse</strong> a corrective behavioral
+                            step (micro-action) and notice the felt shift.
+                        </li>
+                    </ol>
+                    <div class="insight">
+                        <strong>Observation entry:</strong> sudden
+                        disproportionate responses to small cues often point
+                        back to a snapshot + goal-vector.
+                    </div>
+                    <div class="summary-box">
+                        <strong>Key takeaway:</strong> Many present reactions
+                        are echoes of past unresolved events. <br /><strong
+                            >Where to observe:</strong
+                        >
+                        interpersonal triggers, performance anxiety, repetitive
+                        habits.
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROJECTIONS -->
+            <section id="projections" class="section">
+                <div class="card">
+                    <h2>3 — Projections & Duality</h2>
+                    <p>
+                        Projection is the process of attributing internal
+                        content to the external world. When a snapshot activates
+                        an emotion or a goal-vector, the mind often resolves
+                        cognitive dissonance by locating the source outside:
+                        "They made me angry," or "This place is unsafe." This
+                        externalization is efficient but creates duality —
+                        splits in perception that obscure the integrative view.
+                    </p>
+                    <h3>Mechanism</h3>
+                    <p>
+                        Snapshot activation → internal tension → interpretive
+                        story cast outward → confirmation-seeking behaviors →
+                        feedback that appears to validate the external story →
+                        strengthening of the projection and associated binary.
+                    </p>
+                    <h3>Examples to observe</h3>
+                    <ul>
+                        <li>
+                            In politics: labeling an entire group as the problem
+                            rather than noticing one’s own fears or needs.
+                        </li>
+                        <li>
+                            In relationships: accusing a partner of not caring
+                            when the real driver is one’s own fear of
+                            abandonment.
+                        </li>
+                        <li>
+                            In teams: defensive blaming of colleagues for
+                            systemic issues.
+                        </li>
+                    </ul>
+                    <h3>Practice to reclaim projections</h3>
+                    <ol>
+                        <li>
+                            <strong>Interrupt</strong> — take one breath before
+                            acting.
+                        </li>
+                        <li>
+                            <strong>Label</strong> the felt state: "I notice
+                            tightened chest / anger."
+                        </li>
+                        <li>
+                            <strong>Trace</strong> the likely snapshot or memory
+                            behind it.
+                        </li>
+                        <li>
+                            <strong>Own</strong> the projection internally:
+                            "This reaction is mine to examine."
+                        </li>
+                        <li>
+                            <strong>Test</strong> a curiosity-based question to
+                            the other (e.g., "Can you say more about what
+                            happened?").
+                        </li>
+                    </ol>
+                    <div class="insight">
+                        <strong>Observation entry:</strong> absolutist language
+                        ("always", "never") and rapid moral judgements are
+                        strong indicators of projection.
+                    </div>
+                    <div class="summary-box">
+                        <strong>Key takeaway:</strong> Projection constructs
+                        separation. <br /><strong>Where to observe:</strong>
+                        interpersonal arguments, cultural polarization,
+                        workplace blame patterns.
+                    </div>
+                </div>
+            </section>
+
+            <!-- CYCLE -->
+            <section id="cycle" class="section">
+                <div class="card">
+                    <h2>4 — Universal Addiction Cycle</h2>
+                    <p>
+                        This model highlights structure over content: whether
+                        the object is social media, substances, work, or thought
+                        patterns, the cycle repeats because it solves a felt
+                        problem temporarily. Understanding the structure helps
+                        interrupt the loop.
+                    </p>
+                    <h3>Steps of the cycle</h3>
+                    <ol>
+                        <li><strong>Cue</strong> (external or internal).</li>
+                        <li>
+                            <strong>Urge</strong> (rising tension / compulsion).
+                        </li>
+                        <li>
+                            <strong>Action</strong> (behavior chosen to reduce
+                            tension).
+                        </li>
+                        <li>
+                            <strong>Relief</strong> (temporary reduction of
+                            tension — reinforcement).
+                        </li>
+                        <li>
+                            <strong>Consequence</strong> (longer-term costs
+                            emerge).
+                        </li>
+                        <li>
+                            <strong>Shame / Self-judgement</strong> (adds fuel
+                            to the cycle).
+                        </li>
+                        <li>
+                            <strong>Attempt</strong> (resolutions, rules,
+                            willpower attempts).
+                        </li>
+                        <li>
+                            <strong>Repair</strong> (short-lived
+                            repair/compensation; loop continues until
+                            integrated).
+                        </li>
+                    </ol>
+                    <h3>Examples</h3>
+                    <ul>
+                        <li>
+                            Opening an app because of boredom (cue) → scrolling
+                            (action) → dopamine hit (relief) → guilt and time
+                            loss (consequence) → promise to stop (attempt) →
+                            next cue restarts the loop.
+                        </li>
+                        <li>
+                            Stress at work (cue) → drinking to relax (action) →
+                            morning regret (consequence) → increased stress
+                            (fuel).
+                        </li>
+                    </ul>
+                    <div class="insight">
+                        <strong>Observation entry:</strong> identify the cue and
+                        the immediate bodily urge — that's the operative moment
+                        to apply inquiry.
+                    </div>
+                    <div class="summary-box">
+                        <strong>Key takeaway:</strong> The loop is the target,
+                        not just the object. <br /><strong
+                            >Where to observe:</strong
+                        >
+                        daily habits, addiction patterns, productivity traps.
+                    </div>
+                </div>
+            </section>
+
+            <!-- INQUIRY -->
+            <section id="inquiry" class="section">
+                <div class="card">
+                    <h2>
+                        5 — Method of Inquiry (Observation without judgment)
+                    </h2>
+                    <p>
+                        The Method of Inquiry is the practical tool for stepping
+                        out of hijacked patterns. It is not therapy, but an
+                        accessible practice for noticing and integrating
+                        experience. It rests on one simple idea: when logic
+                        cannot resolve a felt state, attention that holds
+                        without fixing allows transformation.
+                    </p>
+                    <h3>Why it works</h3>
+                    <p>
+                        Thought tries to answer; feeling needs to be
+                        experienced. Inquiry gives feeling space. This
+                        diminishes automaticity, weakens reconsolidation of
+                        maladaptive snapshots, and clears perceptual lenses so
+                        projections can be owned.
+                    </p>
+                    <h3>Core steps (detailed)</h3>
+                    <ol>
+                        <li>
+                            <strong>Notice</strong> — name the experience. Use
+                            precise language: not just "I'm anxious" but "I
+                            notice tightness in my chest and a thought that I
+                            won't perform well."
+                        </li>
+                        <li>
+                            <strong>Pause</strong> — suspend immediate action.
+                            This can be as short as three breaths. The pause
+                            breaks automatic enactment.
+                        </li>
+                        <li>
+                            <strong>Observe</strong> — sense the body, the
+                            images, the inner dialogue. Keep a neutral tone: "I
+                            notice..." rather than "I am..."
+                        </li>
+                        <li>
+                            <strong>Integrate</strong> — bring insight into an
+                            embodied response (a small behavior aligned with a
+                            new appraisal) and record it if helpful.
+                        </li>
+                    </ol>
+                    <h3>Examples</h3>
+                    <ul>
+                        <li>
+                            Before replying to an angry email: notice sensation,
+                            breathe four counts, rephrase the reply from
+                            curiosity (ask a clarifying question) rather than
+                            accusation.
+                        </li>
+                        <li>
+                            When craving distraction: pause, identify the urge,
+                            feel it for 60 seconds, then choose a micro-action
+                            aligned with values (stand, stretch, step outside).
+                        </li>
+                    </ul>
+                    <div class="insight">
+                        <strong>Observation entry:</strong> the first 1–3
+                        seconds after a cue are the power point for
+                        intervention—use the pause.
+                    </div>
+                    <div class="summary-box">
+                        <strong>Key takeaway:</strong> Inquiry transforms
+                        automatic reaction into intentional response.
+                        <br /><strong>Where to observe:</strong> emotional
+                        surges, conflict situations, moments of craving.
+                    </div>
+                </div>
+            </section>
+
+            <!-- SYNTHESIS -->
+            <section id="synthesis" class="section">
+                <div class="card">
+                    <h2>6 — Synthesis: Layers and Integration</h2>
+                    <p>
+                        Synthesis is the act of bringing insights from inquiry,
+                        memory work, and behavioral experiments into a coherent
+                        map of one’s life. It recognizes that behaviors are
+                        layered: surface actions, hidden patterns, and deep
+                        emotional cores.
+                    </p>
+                    <div class="layer-card" role="button" tabindex="0">
+                        <h3>Obvious Layer</h3>
+                        <div class="layer-details">
+                            <p>
+                                <strong>Natural:</strong> curiosity, play,
+                                healthy novelty-seeking.<br /><strong
+                                    >Hijacked:</strong
+                                >
+                                compulsive consumption, numbing behaviors.<br /><strong
+                                    >Emotion:</strong
+                                >
+                                loneliness, boredom.
+                            </p>
+                            <p>
+                                <em>Observable in:</em> media use, recreational
+                                drugs, binge-eating, impulse shopping.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="layer-card" role="button" tabindex="0">
+                        <h3>Hidden Layer</h3>
+                        <div class="layer-details">
+                            <p>
+                                <strong>Natural:</strong> striving, mastery,
+                                purposeful work.<br /><strong>Hijacked:</strong>
+                                overwork, perfectionism, identity tied to
+                                achievement.<br /><strong>Emotion:</strong>
+                                shame, fear of inadequacy.
+                            </p>
+                            <p>
+                                <em>Observable in:</em> workplace culture,
+                                constant busyness, inability to rest.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="layer-card" role="button" tabindex="0">
+                        <h3>Emotional Layer</h3>
+                        <div class="layer-details">
+                            <p>
+                                <strong>Natural:</strong> openness to feeling,
+                                capacity to name and share emotions.<br /><strong
+                                    >Hijacked:</strong
+                                >
+                                suppression, reactive eruptions, projection.<br /><strong
+                                    >Emotion:</strong
+                                >
+                                fear of rejection, unresolved grief.
+                            </p>
+                            <p>
+                                <em>Observable in:</em> relationship conflicts,
+                                sudden mood shifts, chronic irritability.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="insight">
+                        <strong>Observation:</strong> name the layer; this
+                        improves diagnostic clarity and suggests different
+                        interventions.
+                    </div>
+                    <div class="summary-box">
+                        <strong>Key takeaway:</strong> Integration requires
+                        attending to each layer with appropriate tools.
+                        <br /><strong>Where to observe:</strong> recurring life
+                        patterns that do not respond to quick fixes.
+                    </div>
+                </div>
+            </section>
+
+            <!-- THE NOW -->
+            <section id="now" class="section">
+                <div class="card">
+                    <h2>7 — The Now</h2>
+                    <p>
+                        The Now is the experiential field where all prior
+                        processes meet. It is where curiosity, memory,
+                        projection, and habit are felt and can be changed. We
+                        describe two complementary qualities of the Now:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Infinite possibility</strong> — each moment
+                            contains multiple potential actions and meanings;
+                            presence allows exploration of those possibilities.
+                        </li>
+                        <li>
+                            <strong>Functional stability</strong> — being
+                            grounded enables consistent, coherent action rather
+                            than reactive fluctuation.
+                        </li>
+                    </ul>
+                    <p>
+                        Freedom (or free will) in practice is the ability to
+                        notice and choose from this space. It is not magical; it
+                        is the cultivated capacity to interrupt automaticity and
+                        select actions aligned with values.
+                    </p>
+                    <h3>Examples and practices</h3>
+                    <ul>
+                        <li>
+                            In meetings: noticing defensiveness and opting for a
+                            clarifying question rather than attack.
+                        </li>
+                        <li>
+                            In habit moments: using a breath to create the gap
+                            between cue and action and choosing a value-aligned
+                            micro-step.
+                        </li>
+                    </ul>
+                    <div class="insight">
+                        <strong>Observation:</strong> The Now is accessible via
+                        embodied attention — breath, posture, sensory presence.
+                    </div>
+                    <div class="summary-box">
+                        <strong>Key takeaway:</strong> Presence is both the
+                        arena of choice and the practice of choosing.
+                        <br /><strong>Where to observe:</strong> transitional
+                        moments, decisions, and micro-pauses.
+                    </div>
+                </div>
+            </section>
+
+            <!-- STATEMENT -->
+            <section id="core-statement" class="section">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-4">
+                        Shared Core Statement
+                    </h2>
+                    <p class="mb-4">
+                        We live in a time of overload — where memory holds too
+                        much charge, where mind, soul, and matter are stretched
+                        beyond their natural capacity.
+                    </p>
+                    <p class="mb-4">
+                        The <strong>Curiosity Compass</strong> and the
+                        <a
+                            href="YOUR-MUPP-LINK-HERE"
+                            class="text-blue-600 underline hover:text-blue-800"
+                        >
+                            Mutual Understanding Policy Project
+                        </a>
+                        are two expressions of one movement:
+                    </p>
+                    <ul class="list-disc pl-6 mb-4">
+                        <li>To observe without judgment.</li>
+                        <li>
+                            To reduce unnecessary charge in thought, feeling,
+                            and memory.
+                        </li>
+                        <li>
+                            To create pathways of integration where what is
+                            fragmented can become whole again.
+                        </li>
+                    </ul>
+                    <p class="mb-4">
+                        Through curiosity, we learn to explore without excess.
+                        Through mutual understanding, we learn to live together
+                        without conflict.
+                    </p>
+                    <p class="font-semibold">
+                        Both are gestures toward the same aim: A world where
+                        intelligence, soul, and matter are not overloaded, but
+                        balanced. A life where continuity flows without
+                        accumulation, and where existence can express itself
+                        freely.
+                    </p>
+                    <p style="margin-top: 8px">
+                        “All that is needed is attention — for in attention, we
+                        are already whole, and alignment comes by itself.”
+                    </p>
+                </div>
+            </section>
+
+            <!-- CONCLUSION -->
+            <section id="conclusion" class="section">
+                <div class="card">
+                    <h2>Conclusion — The Integrated Map</h2>
+                    <p>
+                        This Compass offers a time-arrow for practical
+                        reflection: the origin of curiosity, the role of memory
+                        snapshots and goal-vectors, how projections and loops
+                        develop, and the practices (inquiry, reconsolidation,
+                        synthesis) that open the path back to presence. The aim
+                        is clarity and usable skill — to notice earlier, act
+                        kinder to yourself, and choose more deliberately.
+                    </p>
+                    <p>
+                        The work is iterative. Small experiments (micro-actions)
+                        accumulate into different habits. Over time,
+                        reconsolidation and inquiry can change habitual
+                        responses, reduce hijacks, and restore natural
+                        curiosity.
+                    </p>
+                    <div class="summary-box">
+                        <strong>Final takeaway:</strong> Curiosity is a tool —
+                        wield it intentionally. <br /><strong
+                            >Where to observe:</strong
+                        >
+                        every moment you notice attention shifting.
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer
+            style="
+                position: fixed;
+                right: 14px;
+                bottom: 12px;
+                color: var(--muted);
+                font-size: 12px;
+            "
+        >
+            © <span id="y"></span> Curiosity Compass
+        </footer>
+
+        <script>
+            // insert year
+            document.getElementById("y").textContent = new Date().getFullYear();
+
+            // smooth scroll for timeline
+            document.querySelectorAll(".timeline-item").forEach((item) => {
+                item.addEventListener("click", () => {
+                    const id = item.dataset.target;
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                        });
+                    }
+                });
+            });
+
+            // progress and active marker
+            const sections = document.querySelectorAll("main .section");
+            const items = document.querySelectorAll(".timeline-item");
+            const progress = document.getElementById("timeline-progress");
+
+            function updateActive() {
+                let index = 0;
+                sections.forEach((sec, i) => {
+                    const rect = sec.getBoundingClientRect();
+                    if (rect.top < window.innerHeight * 0.45) index = i;
+                });
+                items.forEach((it) => it.classList.remove("active"));
+                if (items[index]) items[index].classList.add("active");
+                // progress height as percent of document
+                const doc = document.documentElement;
+                const pct =
+                    doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+                progress.style.height = pct * 100 + "%";
+            }
+            window.addEventListener("scroll", updateActive);
+            updateActive();
+
+            // accessible layer toggles
+            document.querySelectorAll(".layer-card").forEach((card) => {
+                card.addEventListener("click", () =>
+                    card.classList.toggle("active")
+                );
+                card.addEventListener("keypress", (e) => {
+                    if (e.key === "Enter" || e.key === " ")
+                        card.classList.toggle("active");
+                });
+            });
+        </script>
+    </body>
+</html>
