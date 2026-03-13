@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
@@ -22,7 +22,12 @@
                 padding: 0;
             }
             body {
-                font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter,
+                font-family:
+                    system-ui,
+                    -apple-system,
+                    "Segoe UI",
+                    Roboto,
+                    Inter,
                     Arial;
                 background: linear-gradient(180deg, #0b0c10 0%, #0f1220 100%);
                 color: var(--text);
@@ -98,7 +103,9 @@
                 max-height: 0;
                 overflow: hidden;
                 opacity: 0;
-                transition: max-height 0.45s ease, opacity 0.3s ease;
+                transition:
+                    max-height 0.45s ease,
+                    opacity 0.3s ease;
                 margin-top: 0;
             }
             .layer-card.active .layer-details {
@@ -845,9 +852,9 @@
                     </h2>
                     <p class="muted">
                         Primary emotions are the short-lived, bodily signals
-                        that arise from the interaction of matter and awareness. They
-                        are universal, shared across animals, and functionally
-                        adaptive.
+                        that arise from the interaction of matter and awareness.
+                        They are universal, shared across animals, and
+                        functionally adaptive.
                     </p>
 
                     <h3 style="margin-top: 12px">List & evolutionary roots</h3>
@@ -1163,10 +1170,10 @@
 
                     <h3>4 — Narrative audit</h3>
                     <p class="muted">
-                        Take one recurring narrative (e.g. "I'm not good enough") and
-                        audit the memory fragments that sustain it. For each
-                        fragment, ask: Is this a primary emotion replay or a
-                        logical interpretation?
+                        Take one recurring narrative (e.g. "I'm not good
+                        enough") and audit the memory fragments that sustain it.
+                        For each fragment, ask: Is this a primary emotion replay
+                        or a logical interpretation?
                     </p>
 
                     <div class="insight">
@@ -1185,9 +1192,10 @@
                         This Compass offers a time-arrow for practical
                         reflection: the origin of curiosity, the role of memory
                         snapshots and goal-vectors, how projections and loops
-                        develop and the practices that open the path back to presence. 
-                        The aim is clarity and usable skill — to notice earlier, act kinder to
-                        yourself, and choose more deliberately.
+                        develop and the practices that open the path back to
+                        presence. The aim is clarity and usable skill — to
+                        notice earlier, act kinder to yourself, and choose more
+                        deliberately.
                     </p>
                     <ul class="observ">
                         <li>
@@ -1235,9 +1243,30 @@
                         >
                         every moment you notice attention shifting.
                     </div>
-                     <p class="insight" style="margin-top: 8px">
+                    <p class="insight" style="margin-top: 8px">
                         “All that is needed is attention — for in attention, we
                         are already whole, and alignment comes by itself.”
+                    </p>
+                </div>
+            </section>
+            <section id="app" class="section">
+                <div class="card">
+                    <h2>A Small Tool</h2>
+                    <p style="margin-bottom: 20px">
+                        For those who prefer a simple structure, a small Android
+                        app exists.
+                    </p>
+                    <a href="/downloads/curiosity_compass_v1.apk" download
+                        >Curiosity Compass (Android APK)</a
+                    >
+                    <p style="margin-top: 20px">
+                        It guides the same inquiry with quiet pacing.<br />
+                        Runs entirely offline. <br />
+                        No accounts. No tracking. No data collection
+                    </p>
+                    <p class="insight">
+                        Install on your phone and allow installation when
+                        Android asks.
                     </p>
                 </div>
             </section>
@@ -1298,7 +1327,7 @@
             // accessible layer toggles
             document.querySelectorAll(".layer-card").forEach((card) => {
                 card.addEventListener("click", () =>
-                    card.classList.toggle("active")
+                    card.classList.toggle("active"),
                 );
                 card.addEventListener("keypress", (e) => {
                     if (e.key === "Enter" || e.key === " ")
